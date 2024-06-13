@@ -12,9 +12,10 @@ import handleDuplicateError from '../errors/handleDuplicateError';
 import AppError from '../errors/AppError';
 import config from '../config';
 import httpStatus from 'http-status';
+import { ErrorRequestHandler } from 'express';
 
 
-const globalErrorHandler = (err, req, res, next) => {
+const globalErrorHandler:ErrorRequestHandler = (err, req, res, next) => {
   let statusCode:number =httpStatus.INTERNAL_SERVER_ERROR
   let message = 'Something went wrong';
 

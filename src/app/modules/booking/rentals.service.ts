@@ -18,7 +18,7 @@ const createBikeRentalIntoDB = async (
 
   //check if user is exist
 const isUserExist=await User.findOne({email: userData.email})
-console.log(isUserExist);
+// console.log(isUserExist);
 
  if(!isUserExist){
   throw new AppError(httpStatus.NOT_FOUND,'User not found')
@@ -64,13 +64,13 @@ const returnBike = async (id: string) => {
   // find current rentals
   const currentRentals = await Rental.findById(id);
   const bikeId = currentRentals?.bikeId;
-console.log(bikeId);
+// console.log(bikeId);
 
   if (!currentRentals) {
     throw new AppError(httpStatus.NOT_FOUND, 'Rental is no found!');
   }
 
-  //   find bike by id
+
   const rentalsBike = await Bike.findById(bikeId);
 
   if (!rentalsBike) {
@@ -78,28 +78,25 @@ console.log(bikeId);
   }
 
   const pricePerHour = rentalsBike?.pricePerHour;
-  console.log(pricePerHour);
+  // console.log(pricePerHour);
   
   const startTime = new Date(currentRentals?.startTime as Date);
-console.log(startTime);
+// console.log(startTime);
 
-  //  current time
+
   const returnTime = new Date();
-  console.log(returnTime);
+  // console.log(returnTime);
   
-  // hours of rent
+
   const differenceTime = returnTime.getTime() - startTime.getTime();
-  console.log(differenceTime);
+  // console.log(differenceTime);
   
   const differenceInHours = (differenceTime / (1000 * 60 * 60)).toFixed(2);
-console.log(differenceInHours);
+// console.log(differenceInHours);
 
-  //   total cost
   const totalCost = (Number(differenceInHours) * Number(pricePerHour)).toFixed(
     2,
   );
-console.log(totalCost);
-
   const session = await startSession();
 
   try {

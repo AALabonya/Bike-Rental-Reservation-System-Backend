@@ -27,8 +27,21 @@ const userSchema=new Schema<TUser, UserModel>(
 
 },
 {
-    timestamps:true,
-})
+    timestamps: true,
+    toJSON: {
+      transform: function (doc, ret) {
+        delete ret.password; 
+        return ret;
+      },
+    },
+    toObject: {
+      transform: function (doc, ret) {
+        delete ret.password;
+        return ret;
+      },
+    },
+  })
+
     userSchema.pre('save', async function (next) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const user = this;
