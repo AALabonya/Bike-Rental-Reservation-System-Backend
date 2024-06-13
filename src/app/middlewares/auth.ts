@@ -11,8 +11,8 @@ import { User } from '../modules/users/user.model';
 export const auth = (...requestRoles: TUserRole[]) => {
     return catchAsync(
         async (req: Request, res: Response, next: NextFunction) => {
-            const bearerToken = req.headers.authorization;
-            const token = bearerToken?.split(' ')[1];
+            const BearerToken = req.headers.authorization;
+            const token = BearerToken?.split(' ')[1];
             if (!token) {
                 throw new AppError(
                     httpStatus.UNAUTHORIZED,

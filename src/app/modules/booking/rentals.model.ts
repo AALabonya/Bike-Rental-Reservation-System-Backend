@@ -1,15 +1,15 @@
-import { model, Schema } from 'mongoose';
-import { TRentals } from './rentals.interface';
+import mongoose, { Schema, model } from 'mongoose'
+import { TRentals } from './rentals.interface'
 
-const rentalsSchema = new Schema<TRentals>({
+
+const RentalSchema = new Schema<TRentals>({
   userId: {
-    type: Schema.Types.ObjectId,
-    required: true,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
   bikeId: {
-    type: Schema.Types.ObjectId,
-    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    required: [true, 'Bike id is required'],
     ref: 'Bike',
   },
   startTime: {
@@ -28,6 +28,6 @@ const rentalsSchema = new Schema<TRentals>({
     type: Boolean,
     default: false,
   },
-});
+})
 
-export const rentals = model('Rental', rentalsSchema);
+export const Rental = model<TRentals>('Rental', RentalSchema)

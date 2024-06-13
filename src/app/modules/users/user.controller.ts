@@ -5,9 +5,12 @@ import sendResponse from '../../../utils/sendResponse';
 import httpStatus from 'http-status';
 
 
-const createUser = catchAsync(async (req, res) => {
-    const { email } = req.body
-    const result = await userServices.createUsersIntoDB(email)
+const getUserProfile = catchAsync(async (req, res) => {
+    const { email } = req.user
+    console.log( req.body);
+    
+    const result = await userServices.getUsersIntoDB(email)
+// console.log(result);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -31,6 +34,6 @@ const updateUserProfile= catchAsync(async (req, res) => {
 
 
 export const userControllers = {
-    createUser,
+   getUserProfile,
     updateUserProfile
 };

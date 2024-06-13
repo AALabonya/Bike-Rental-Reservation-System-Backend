@@ -18,10 +18,17 @@ const updateBikes = async (id: string, payload: Partial<TBike>) => {
     return data;
   };
   
-  const deleteBikes = async (id: string) => {
-    const data = await Bike.findByIdAndDelete(id);
-    return data;
+  const deleteBikes = async (id: string): Promise<TBike | null> => {
+    const result = await Bike.findByIdAndUpdate(
+      id,{ isAvailable: false }, { new: true },
+  );
+  console.log(result);
+  
+  return result;
+    
   };
+
+
 export const BikeServices = {
 	createBikeIntoDB,
 	getAllBikesFromDB,

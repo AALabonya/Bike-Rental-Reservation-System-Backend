@@ -1,20 +1,14 @@
-import { z } from "zod";
+import { z } from 'zod'
 
-const createRentalValidation = z.object({
+export const createBikeRentalValidationSchema = z.object({
   body: z.object({
-    startTime: z.string({ required_error: "Start time is required" }),
-    bikeId: z.string({ required_error: "Bike Id is Required" }),
+    bikeId: z.string({
+      invalid_type_error: 'Bike Id must be String',
+      required_error: 'Bike Id is required',
+    }),
+    startTime: z.string({
+      invalid_type_error: 'Start Time must be String',
+      required_error: 'Start Time is required',
+    }),
   }),
-});
-
-const updateRentalValidation = z.object({
-  body: z.object({
-    startTime: z.string().optional(),
-    bikeId: z.string().optional(),
-  }),
-});
-
-export const RentalValidation = {
-  createRentalValidation,
-  updateRentalValidation,
-};
+})

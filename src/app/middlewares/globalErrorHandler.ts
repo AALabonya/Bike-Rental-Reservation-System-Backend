@@ -11,10 +11,11 @@ import handleCastError from '../errors/handleCastError';
 import handleDuplicateError from '../errors/handleDuplicateError';
 import AppError from '../errors/AppError';
 import config from '../config';
+import httpStatus from 'http-status';
 
 
 const globalErrorHandler = (err, req, res, next) => {
-  let statusCode = 500;
+  let statusCode:number =httpStatus.INTERNAL_SERVER_ERROR
   let message = 'Something went wrong';
 
   let errorSources: TErrorSource = [

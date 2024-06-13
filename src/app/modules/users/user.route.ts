@@ -5,8 +5,8 @@ import { USER_ROLE } from './user.constant';
 
 const route = express.Router();
 
-route.get('/me', auth(USER_ROLE.admin, USER_ROLE.user), userControllers.createUser)
+route.get('/me', auth(USER_ROLE.admin, USER_ROLE.user), userControllers.getUserProfile)
 route.put('/me', auth(USER_ROLE.admin, USER_ROLE.user), userControllers.updateUserProfile)
 
 
-export const userRouter = route;
+export const UserRouter = route;

@@ -1,42 +1,51 @@
-import catchAsync from "../../../utils/catchAsync";
-import { rentalServices } from "./rentals.service";
+import { Request, Response } from 'express'
+import catchAsync from '../../../utils/catchAsync'
+import { rentalServices } from './rentals.service'
+import sendResponse from '../../../utils/sendResponse'
+import httpStatus from 'http-status'
 
 
-const createRental = catchAsync(async (req, res) => {
-  const { bikeId, startTime } = req.body;
+// *create bike data
+const createBikeRental = catchAsync(async (req: Request, res: Response) => {
+  const userData = req.user
+  const payload = req.body
+  const result = await rentalServices.createBikeRentalIntoDB(
+    userData,
+    payload,
+  )
 
-  const userId = req.user._id;
-
-  const rental = await rentalServices.createRental(userId, bikeId, startTime);
-
-  res.status(200).json({
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
     success: true,
-    statusCode: 200,
-    message: "Rental created successfully",
-    data: rental,
-  });
-});
-
+    message: 'Rental created successfully',
+    data: result,
+  })
+})
 const getAllRentals = catchAsync(async (req, res) => {
-  const rental = await rentalServices.getAllRentals();
+  const data = await rentalServices.getAllRentals();
 
-  if (rental.length === 0) {
-    return res.status(404).json({
-      success: false,
-      message: "No Data Found",
-      data: [],
-    });
-  }
-
-  res.status(200).json({
-    success: true,
+  sendResponse(res, {
     statusCode: 200,
-    message: "Rentals retrieved successfully",
-    data: rental,
+    success: true,
+    message: 'Retrieve rentals successfully!',
+    data,
   });
 });
 
-export const rentalControllers = {
-  createRental,
+const returnBike = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  const data = await rentalServices.returnBike(id);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'create rentals successfully!',
+    data:data,
+  });
+});
+export const rentalController = {
+  createBikeRental,
   getAllRentals,
-};
+  returnBike
+}

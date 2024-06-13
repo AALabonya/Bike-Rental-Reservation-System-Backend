@@ -7,7 +7,7 @@ const signUpUser = catchAsync(async (req, res) => {
     const payload = req.body
     const result = await authServices.signUpUser(payload)
     sendResponse(res, {
-        statusCode: httpStatus.CREATED,
+        statusCode: 201,
         success: true,
         message: 'User registered successfully',
         data: result,

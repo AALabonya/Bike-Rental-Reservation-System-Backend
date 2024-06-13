@@ -14,11 +14,7 @@ const userSchema=new Schema<TUser, UserModel>(
         required:true,
         unique:true
     },
-    password:{
-        type:String,
-        required:true,
-        select:0,
-    },
+    password: { type: String, required: true, select: 0 },
     address:{
      type:String,
      required:true,
@@ -36,14 +32,12 @@ const userSchema=new Schema<TUser, UserModel>(
     userSchema.pre('save', async function (next) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const user = this;
-        user.password = await bcrypt.hash(
-          user.password,
-          Number(config.bcrypt_salt_rounds),
-        );
+        user.password = await bcrypt.hash(user.password,Number(config.bcrypt_salt_rounds));
       
         next();
       });
-    
+  
+  
       userSchema.static('isUserExistsByEmailID', async function (email: string) {
         return await User.findOne({ email }).select('+password')
     })
