@@ -38,9 +38,9 @@ const updateBike = catchAsync(async (req: Request, res: Response) => {
   
   const deleteBike = catchAsync(async (req, res) => {
     const { id } = req.params;
-console.log(id);
+
     const data = await BikeServices.deleteBikes(id);
-  console.log(data);
+
   
     sendResponse(res, {
       statusCode: 200,

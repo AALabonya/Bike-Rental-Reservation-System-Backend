@@ -7,7 +7,7 @@ import httpStatus from 'http-status';
 
 const getUserProfile = catchAsync(async (req, res) => {
     const { email } = req.user
-    console.log( req.body);
+    // console.log( req.body);
     
     const result = await userServices.getUsersIntoDB(email)
 // console.log(result);
