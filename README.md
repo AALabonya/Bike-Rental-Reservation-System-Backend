@@ -61,8 +61,8 @@ The Bike Rental Reservation System is designed to facilitate seamless bike renta
     ```bash
     NODE_ENV = development
     PORT = 5000
-    DB_URI = mongodb+srv://<name>:<password>>@cluster0.waps95s.mongodb.net/<DatabasenName>?retryWrites=true&w=majority&appName=Cluster0
-    BCRYPT_SALT_ROUNDS=12
+    DATABASE_URL = mongodb+srv://<name>:<password>>@cluster0.waps95s.mongodb.net/<DatabasenName>?retryWrites=true&w=majority&appName=Cluster0
+    BCRYPT_SALT_ROUNDS =12
     JWT_ACCESS_SECRET = accessSecret
     JWT_ACCESS_EXPIRE_IN = 0h
     ```
