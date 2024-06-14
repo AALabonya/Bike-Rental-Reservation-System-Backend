@@ -40,7 +40,7 @@ const returnBike = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: 'create rentals successfully!',
+    message: 'Bike returned successfully!',
     data:data,
   });
 });

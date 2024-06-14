@@ -15,6 +15,7 @@ const userSchema=new Schema<TUser, UserModel>(
         unique:true
     },
     password: { type: String, required: true, select: 0 },
+    phone:{type:String, required:true},
     address:{
      type:String,
      required:true,
