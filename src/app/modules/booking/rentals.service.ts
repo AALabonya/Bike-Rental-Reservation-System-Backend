@@ -1,75 +1,181 @@
-import { JwtPayload } from 'jsonwebtoken'
+import httpStatus from 'http-status';
+import { JwtPayload } from 'jsonwebtoken';
+import { startSession } from 'mongoose';
+import QueryBuilder from '../../builder/QueryBuilder';
+import { IRental } from './rentals.interface';
+import { User } from '../users/user.model';
+import AppError from '../../errors/AppError';
+import { Bike } from '../bike/bike.model';
+import { Rental } from './rentals.model';
 
-import httpStatus from 'http-status'
-import AppError from '../../errors/AppError'
+const createRental = async (user: JwtPayload, payload: IRental) => {
+  const { bikeId, startTime } = payload;
 
-import mongoose, { startSession } from 'mongoose'
-import { TRentals } from './rentals.interface'
-import { Bike } from '../bike/bike.model'
-import { Rental } from './rentals.model'
-import { User } from '../users/user.model'
-
-
-const createBikeRentalIntoDB = async (
-  userData: JwtPayload,
-  payload: TRentals,
-) => {
-  const {bikeId, startTime}=payload
-
-  //check if user is exist
-const isUserExist=await User.findOne({email: userData.email})
-// console.log(isUserExist);
-
- if(!isUserExist){
-  throw new AppError(httpStatus.NOT_FOUND,'User not found')
- }
-
- //check if bike is exist
- const isBikeExist= await Bike.findById(bikeId)
- if(!isBikeExist){
-  throw new AppError(httpStatus.NOT_FOUND,'User not found')
- }
- 
- const rentalInfo={
-  userId: isUserExist._id,
-  bikeId,
-  startTime
- }
-
- const session= await startSession()
-
- try {
-  session.startTransaction()
-  const createRentalData= await Rental.create([rentalInfo],{session})
- if(!createRentalData.length){
-  throw new AppError(httpStatus.BAD_REQUEST,'Failed to create Rental')
- }
- await Bike.findByIdAndUpdate(
-  bikeId,{
-    isAvailable:false,
-  },{session}
- )
- await session.commitTransaction();
-        return createRentalData[0];
-    } catch (error) {
-        await session.abortTransaction();
-        throw error;
-    } finally {
-        await session.endSession();
-    }
-
-}
-
-const returnBike = async (id: string) => {
-  // find current rentals
-  const currentRentals = await Rental.findById(id);
-  const bikeId = currentRentals?.bikeId;
-// console.log(bikeId);
-
-  if (!currentRentals) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Rental is no found!');
+  // checking if user exists
+  const authUser = await User.findOne({ email: user.email });
+  if (!authUser) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User Not Found');
   }
 
+  // checking if bike exists
+  const requestedBike = await Bike.findById(bikeId);
+  if (!requestedBike) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Bike Not Found');
+  }
+
+  const rentalData = {
+    userId: authUser._id,
+    bikeId,
+    startTime,
+  };
+
+  // creating session
+  const session = await startSession();
+
+  try {
+    // starting transaction session
+    session.startTransaction();
+
+    const createRental = await Rental.create([rentalData], { session });
+
+    if (!createRental.length) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to create Rental');
+    }
+
+    await Bike.findByIdAndUpdate(
+      bikeId,
+      {
+        isAvailable: false,
+      },
+      { session },
+    );
+
+    await session.commitTransaction();
+    return createRental[0];
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    await session.endSession();
+  }
+};
+
+const returnRental = async (id: string) => {
+  const rental = await Rental.findById(id);
+
+  if (!rental) {
+    throw new AppError(httpStatus.NOT_FOUND, 'No Rental found');
+  }
+
+  const bikeId = rental.bikeId;
+
+  // creating session
+  const session = await startSession();
+
+  try {
+    // starting transaction session
+    session.startTransaction();
+
+    const updateBike = await Bike.findByIdAndUpdate(
+      bikeId,
+      {
+        isAvailable: true,
+      },
+      { session },
+    );
+
+    if (!updateBike) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to Update Bike');
+    }
+
+    const updateRental = await Rental.findByIdAndUpdate(
+      id,
+      {
+        returnTime: new Date(),
+        isReturned: true,
+        bookingPayment: 'paid',
+      },
+      { new: true, session },
+    );
+
+    if (!updateRental) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to Update Rental');
+    }
+
+    await session.commitTransaction();
+
+    return updateRental;
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    await session.endSession();
+  }
+};
+
+// const calculateCost = async (id: string) => {
+//   const rental = await Rental.findById(id);
+
+//   if (!rental) {
+//     throw new AppError(httpStatus.NOT_FOUND, 'No Rental found');
+//   }
+
+//   const bikeId = rental.bikeId;
+//   const startTime: Date = new Date(rental.startTime);
+//   const currentTime: Date = new Date();
+
+//   const totalMilliseconds: number = currentTime.getTime() - startTime.getTime();
+//   const totalHours: number = totalMilliseconds / (1000 * 60 * 60);
+
+//   const roundedTotalHours: number = parseInt(totalHours.toFixed(0), 10);
+
+//   // creating session
+//   const session = await startSession();
+
+//   try {
+//     // starting transaction session
+//     session.startTransaction();
+
+//     const updateBike = await Bike.findByIdAndUpdate(
+//       bikeId,
+//       {
+//         isAvailable: true,
+//       },
+//       { session },
+//     );
+
+//     if (!updateBike) {
+//       throw new AppError(httpStatus.BAD_REQUEST, 'Failed to Update Bike');
+//     }
+
+//     const updateRental = await Rental.findByIdAndUpdate(
+//       id,
+//       {
+//         totalCost: roundedTotalHours * updateBike?.pricePerHour - 100,
+//       },
+//       { new: true, session },
+//     );
+
+//     if (!updateRental) {
+//       throw new AppError(httpStatus.BAD_REQUEST, 'Failed to Update Rental');
+//     }
+
+//     await session.commitTransaction();
+
+//     return updateRental;
+//   } catch (error) {
+//     await session.abortTransaction();
+//     throw error;
+//   } finally {
+//     await session.endSession();
+//   }
+// };
+const calculateCost = async (id: string) => {
+  const rental = await Rental.findById(id);
+  const bikeId = rental?.bikeId;
+  if (!rental) {
+    throw new AppError(httpStatus.NOT_FOUND, 'No Rental found');
+  }
 
   const rentalsBike = await Bike.findById(bikeId);
 
@@ -77,71 +183,116 @@ const returnBike = async (id: string) => {
     throw new AppError(httpStatus.NOT_FOUND, 'Bike is no found!');
   }
 
-  const pricePerHour = rentalsBike?.pricePerHour;
+  // const pricePerHour = rentalsBike?.pricePerHour;
   // console.log(pricePerHour);
-  
-  const startTime = new Date(currentRentals?.startTime as Date);
-// console.log(startTime);
 
+  const startTime = new Date(rental?.startTime as Date);
+  // console.log(startTime);
 
   const returnTime = new Date();
   // console.log(returnTime);
-  
 
   const differenceTime = returnTime.getTime() - startTime.getTime();
   // console.log(differenceTime);
-  
-  const differenceInHours = (differenceTime / (1000 * 60 * 60)).toFixed(2);
-// console.log(differenceInHours);
 
-  const totalCost = (Number(differenceInHours) * Number(pricePerHour)).toFixed(
-    2,
-  );
+  const differenceInHours = differenceTime / (1000 * 60 * 60);
+  // console.log(differenceInHours);
+
+  const totalhours: number = parseInt(differenceInHours.toFixed(0));
+
+  // creating session
   const session = await startSession();
 
   try {
     // starting transaction session
     session.startTransaction();
-    const isAvailableUpdate = await Bike.findByIdAndUpdate(
-      currentRentals?.bikeId,
-      { isAvailable: true },
-      { new: true, runValidators: true, session },
+
+    const updateBike = await Bike.findByIdAndUpdate(
+      bikeId,
+      {
+        isAvailable: true,
+      },
+      { session },
     );
 
-    if (!isAvailableUpdate) {
-      throw new AppError(httpStatus.BAD_REQUEST,
-        'Bike availability update failed!',
-      );
+    if (!updateBike) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to Update Bike');
     }
+
     const updateRental = await Rental.findByIdAndUpdate(
       id,
-      { returnTime, totalCost, isReturned: true },
-      { new: true, runValidators: true, session },
+      {
+        totalCost: totalhours * updateBike?.pricePerHour - 100,
+      },
+      { new: true, session },
     );
 
     if (!updateRental) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Rental update failed!');
+      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to Update Rental');
     }
 
-  
     await session.commitTransaction();
-    session.endSession();
 
     return updateRental;
   } catch (error) {
     await session.abortTransaction();
-    session.endSession();
-    throw new AppError(httpStatus.BAD_REQUEST, 'Return rental failed!');
+    throw error;
+  } finally {
+    await session.endSession();
   }
 };
 
-const getAllRentals = async () => {
-  const data = await Rental.find();
-  return data;
+const getAllRentals = async (email: string, query: Record<string, unknown>) => {
+  const authUser = await User.findOne({ email });
+  if (!authUser) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User Not Found');
+  }
+
+  const RentalQuery = new QueryBuilder(
+    Rental.find({
+      userId: authUser._id,
+    }).populate('bikeId'),
+    query,
+  )
+    .search(['bookingPayment'])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const meta = await RentalQuery.countTotal();
+  const data = await RentalQuery.modelQuery;
+
+  return {
+    meta,
+    data,
+  };
 };
 
-export const rentalServices = {
-  createBikeRentalIntoDB,
-  returnBike,
-  getAllRentals
-}
+const getRentals = async (query: Record<string, unknown>) => {
+  const RentalQuery = new QueryBuilder(
+    Rental.find().populate('bikeId').populate('userId'),
+    query,
+  )
+    .search(['bookingPayment'])
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const meta = await RentalQuery.countTotal();
+  const data = await RentalQuery.modelQuery;
+
+  return {
+    meta,
+    data,
+  };
+};
+
+export const RentalService = {
+  calculateCost,
+  createRental,
+  returnRental,
+  getAllRentals,
+  getRentals,
+};

@@ -1,51 +1,74 @@
-import { Request, Response } from 'express'
-import catchAsync from '../../../utils/catchAsync'
-import { rentalServices } from './rentals.service'
-import sendResponse from '../../../utils/sendResponse'
-import httpStatus from 'http-status'
+import httpStatus from 'http-status';
+import catchAsync from '../../../utils/catchAsync';
+import { RentalService } from './rentals.service';
+import sendResponse from '../../../utils/sendResponse';
 
-
-// *create bike data
-const createBikeRental = catchAsync(async (req: Request, res: Response) => {
-  const userData = req.user
-  const payload = req.body
-  const result = await rentalServices.createBikeRentalIntoDB(
-    userData,
-    payload,
-  )
+const createRental = catchAsync(async (req, res) => {
+  const user = req.user;
+  const payload = req.body;
+  const result = await RentalService.createRental(user, payload);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Rental created successfully',
     data: result,
-  })
-})
+  });
+});
+
+const calculateCost = catchAsync(async (req, res) => {
+  const id = req.params.id;
+  const result = await RentalService.calculateCost(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Bike returned successfully',
+    data: result,
+  });
+});
+
+const returnRental = catchAsync(async (req, res) => {
+  const id = req.params.id;
+  const result = await RentalService.returnRental(id);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Bike returned successfully',
+    data: result,
+  });
+});
+
 const getAllRentals = catchAsync(async (req, res) => {
-  const data = await rentalServices.getAllRentals();
+  const { email } = req.user;
+
+  const result = await RentalService.getAllRentals(email, req.query);
 
   sendResponse(res, {
-    statusCode: 200,
+    statusCode: httpStatus.OK,
     success: true,
-    message: 'Retrieve rentals successfully!',
-    data,
+    message: 'Rentals retrieved successfully',
+    data: result.data,
+    meta: result.meta,
+  });
+});
+const getRentals = catchAsync(async (req, res) => {
+  const result = await RentalService.getRentals(req.query);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Rentals retrieved successfully',
+    data: result.data,
+    meta: result.meta,
   });
 });
 
-const returnBike = catchAsync(async (req, res) => {
-  const { id } = req.params;
-
-  const data = await rentalServices.returnBike(id);
-
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'Bike returned successfully!',
-    data:data,
-  });
-});
-export const rentalController = {
-  createBikeRental,
+export const RentalController = {
+  calculateCost,
+  createRental,
+  returnRental,
   getAllRentals,
-  returnBike
-}
+  getRentals,
+};
