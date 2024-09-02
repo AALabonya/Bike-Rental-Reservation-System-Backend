@@ -48,7 +48,6 @@ const allCoupons = catchAsync(async (req, res) => {
     success: true,
     message: 'Rental fetched successfully',
     data: result.data,
-    meta: result.meta,
   });
 });
 

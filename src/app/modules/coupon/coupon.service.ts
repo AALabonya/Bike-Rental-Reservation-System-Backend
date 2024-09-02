@@ -27,11 +27,9 @@ const allCoupons = async (query: Record<string, unknown>) => {
     .paginate()
     .fields();
 
-  const meta = await CouponQuery.countTotal();
   const data = await CouponQuery.modelQuery;
 
   return {
-    meta,
     data,
   };
 };
