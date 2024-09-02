@@ -222,7 +222,7 @@ const calculateCost = async (id: string) => {
     const updateRental = await Rental.findByIdAndUpdate(
       id,
       {
-        totalCost: totalhours * updateBike?.pricePerHour - 100,
+        totalCost: totalhours * updateBike?.pricePerHour,
       },
       { new: true, session },
     );
